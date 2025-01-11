@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: sea
+    ports:
+      - "5432:5432" # Прокидываем порт для подключения
+    environment:
+      POSTGRES_USER: spanch   # Имя пользователя базы данных
+      POSTGRES_PASSWORD: bob # Пароль для подключения
+      POSTGRES_DB: bikini-bottom  # Имя базы данных
+    #volumes:
+      #- postgres_data:/var/lib/postgresql/data # Хранение данных вне контейнера
+
+volumes:
+  postgres_data:

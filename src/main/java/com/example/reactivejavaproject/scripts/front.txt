@@ -1,0 +1,133 @@
+import React, { useState } from 'react';
+import './App.css';
+
+function App() {
+  const [generateCount, setGenerateCount] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    intervalFrom: '',
+    intervalTo: '',
+    status: 'PENDING',
+    filesChanged: ''
+  });
+  const [tableData, setTableData] = useState([]);
+  const [loadingTime, setLoadingTime] = useState(null);
+
+  const handleGenerateSubmit = async () => {
+    try {
+      setFeedback('');
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setFeedback('Data generated successfully');
+    } catch (error) {
+      setFeedback('Data generation error');
+    }
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const startTime = performance.now();
+      const mockResponse = [
+        { name: 'John Doe', interval: '12:00-14:00', status: 'COMPLETED', filesChanged: 5 },
+        { name: formData.name, interval: ${formData.intervalFrom} - ${formData.intervalTo}, status: formData.status, filesChanged: formData.filesChanged },
+      ];
+      const endTime = performance.now();
+      setTableData(mockResponse);
+      setLoadingTime((endTime - startTime).toFixed(2));
+    } catch (error) {
+      console.error('Error: ', error);
+    }
+  };
+
+  return (
+      <div className="App">
+        <h1>Reactive Java</h1>
+
+        <div className="form-section">
+          <h2>Generate commits</h2>
+          <input
+              type="number"
+              placeholder="Number of commits"
+              value={generateCount}
+              onChange={(e) => setGenerateCount(e.target.value)}
+          />
+          <button onClick={handleGenerateSubmit}>Generate</button>
+          {feedback && <p>{feedback}</p>}
+        </div>
+
+        <div className="form-section">
+          <h2>Filter commits</h2>
+          <form onSubmit={handleFormSubmit}>
+            <input
+                type="text"
+                placeholder="Name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <div>
+              <label>From:</label>
+              <input
+                  type="datetime-local"
+                  value={formData.intervalFrom}
+                  onChange={(e) => setFormData({ ...formData, intervalFrom: e.target.value })}
+              />
+            </div>
+            <div>
+              <label>To:</label>
+              <input
+                  type="datetime-local"
+                  value={formData.intervalTo}
+                  onChange={(e) => setFormData({ ...formData, intervalTo: e.target.value })}
+              />
+            </div>
+            <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            >
+              <option value="PENDING">PENDING</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="FAILED">FAILED</option>
+            </select>
+            <input
+                type="number"
+                placeholder="Number of modified files"
+                value={formData.filesChanged}
+                onChange={(e) => setFormData({ ...formData, filesChanged: e.target.value })}
+            />
+            <button type="submit">Отправить</button>
+          </form>
+        </div>
+
+        {loadingTime && <p>Response time: {loadingTime} ms</p>}
+          {tableData.length > 0 && (
+              <div className="table-section">
+                  <h2>Filtered commits</h2>
+                  <table>
+                      <thead>
+                      <tr>
+                          <th>Name</th>
+                          <th>Time</th>
+                          <th>Status</th>
+                          <th>Modified files</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {tableData.map((row, index) => (
+                          <tr key={index}>
+                              <td>{row.name}</td>
+                              <td>{row.interval}</td>
+                              <td>{row.status}</td>
+                              <td>{row.filesChanged}</td>
+                          </tr>
+                      ))}
+                      </tbody>
+                  </table>
+              </div>
+          )}
+      </div>
+  );
+}
+
+export default App;
+`
