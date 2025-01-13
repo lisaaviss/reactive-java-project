@@ -60,34 +60,32 @@ public class CommitService {
                 });
     }
 
-    public Flux<Commit> getFilteredCommits(String authorName, String status, Integer filesChanged, LocalDateTime intervalFrom, LocalDateTime intervalTo, Integer limit) {
-        // Если фильтры не заданы, возвращаем все коммиты
-        if (authorName == null && status == null && filesChanged == null && intervalFrom == null && intervalTo == null) {
+    public Flux<Commit> getFilteredCommitsWithAuthorName(String authorName, String status, Integer filesChanged, LocalDateTime intervalFrom, LocalDateTime intervalTo, Integer limit) {
+        // Фильтруем авторов по имени, если задано
+        Mono<List<Author>> authorsMono = (authorName != null)
+                ? authorRepository.findByNameContaining(authorName).collectList()
+                : authorRepository.findAll().collectList();
+
+        return authorsMono.flatMapMany(authors -> {
+            List<Long> authorIds = authors.stream().map(Author::getId).toList();
+
             return commitRepository.findAll()
+                    .filter(commit -> authorName == null || authorIds.contains(commit.getAuthorId()))
+                    .filter(commit -> status == null || commit.getStatus().equalsIgnoreCase(status))
+                    .filter(commit -> filesChanged == null || commit.getChangedFilesCount() >= filesChanged)
+                    .filter(commit -> intervalFrom == null || !commit.getCommitTimestamp().isBefore(intervalFrom))
+                    .filter(commit -> intervalTo == null || !commit.getCommitTimestamp().isAfter(intervalTo))
                     .sort((c1, c2) -> c2.getCommitTimestamp().compareTo(c1.getCommitTimestamp()))
-                    .take(limit != null ? limit : Integer.MAX_VALUE);
-        }
-
-        // Если есть хотя бы один фильтр
-        Mono<Long> authorIdMono = authorName != null
-                ? authorRepository.findByName(authorName).map(author -> author.getId())
-                : Mono.empty();
-
-        return authorIdMono.flatMapMany(authorId ->
-                commitRepository.findAll()
-                        .filter(commit -> authorId == null || commit.getAuthorId().equals(authorId))
-                        .filter(commit -> status == null || commit.getStatus().equalsIgnoreCase(status))
-                        .filter(commit -> filesChanged == null || commit.getChangedFilesCount() >= filesChanged)
-                        .filter(commit -> intervalFrom == null || !commit.getCommitTimestamp().isBefore(intervalFrom))
-                        .filter(commit -> intervalTo == null || !commit.getCommitTimestamp().isAfter(intervalTo))
-                        .sort((c1, c2) -> c2.getCommitTimestamp().compareTo(c1.getCommitTimestamp()))
-                        .take(limit != null ? limit : Integer.MAX_VALUE)
-        );
+                    .take(limit != null ? limit : Integer.MAX_VALUE)
+                    .flatMap(commit -> {
+                        // Дополнительно загружаем данные автора
+                        return authorRepository.findById(commit.getAuthorId())
+                                .map(author -> {
+                                    commit.setAuthorName(author.getName());
+                                    return commit;
+                                });
+                    });
+        });
     }
-
-
-
-
-
 
 }

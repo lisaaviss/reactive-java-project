@@ -1,6 +1,7 @@
 package com.example.reactivejavaproject.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,8 @@ public class Commit {
     private String status;
     private Integer changedFilesCount;
     private String commitMessage;
+    @Transient
+    private String authorName;
 
     public Commit(Long id, Long authorId, LocalDateTime commitTimestamp, String status, Integer changedFilesCount, String commitMessage) {
         this.id = id;
@@ -22,9 +25,17 @@ public class Commit {
         this.status = status;
         this.changedFilesCount = changedFilesCount;
         this.commitMessage = commitMessage;
+
     }
     public Commit(){
 
+    }
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
     }
     // Getters and setters
     public Long getId() {

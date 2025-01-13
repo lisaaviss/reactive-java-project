@@ -26,8 +26,11 @@ public class CommitController {
             @RequestParam(required = false) LocalDateTime endTime,
             @RequestParam(required = false) Integer limit
     ) {
-        return commitService.getFilteredCommits(authorName, status, minChangedFiles, startTime, endTime, limit);
+        // Если status пустой, заменяем на null
+        String filteredStatus = (status == null || status.isEmpty()) ? null : status;
+        return commitService.getFilteredCommitsWithAuthorName(authorName, filteredStatus, minChangedFiles, startTime, endTime, limit);
     }
+
 
     @PostMapping("/generate")
     public Mono<Void> generateCommits(@RequestParam int commitCount) {
